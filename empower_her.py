@@ -11,7 +11,7 @@ EMAIL_PASSWORD = "nwft qatt xqdx kpgi"
 
 # MongoDB Setup
 
-CONNECTION_STRING = "mongodb+srv://manisha:<manisha@123>@empowerher.fpkmk.mongodb.net/?retryWrites=true&w=majority&appName=empowerher"
+CONNECTION_STRING = "mongodb+srv://manisha:<db_password>@empowerher.fpkmk.mongodb.net/?retryWrites=true&w=majority&appName=empowerher"
 
 # Connect to MongoDB Atlas
 client = MongoClient(CONNECTION_STRING)
