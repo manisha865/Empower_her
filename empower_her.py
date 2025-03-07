@@ -10,63 +10,15 @@ EMAIL_ADDRESS = "empowerher12345@gmail.com"
 EMAIL_PASSWORD = "nwft qatt xqdx kpgi"
 
 # MongoDB Setup
-client = MongoClient("mongodb://localhost:27017/")
-db = client["empower_her"]  # Updated database name
-users_collection = db["users"]  # Updated collection name
+CONNECTION_STRING = "mongodb+srv://manisha:<password>@empowerher.fpkmk.mongodb.net/?retryWrites=true&w=majority&appName=empowerher"
 
-# Helper Functions
-def hash_password(password):
-    """Hashes the password using SHA256."""
-    return hashlib.sha256(password.encode()).hexdigest()
-
-def send_otp(email):
-    """Generates and sends OTP to the given email address."""
-    otp = random.randint(100000, 999999)
-    try:
-        # Connecting to the SMTP server and sending the OTP
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-            message = f"Subject: Your OTP Code\n\nYour OTP code is: {otp}"
-            server.sendmail(EMAIL_ADDRESS, email, message)
-            return otp  # Return OTP if successfully sent
-    except smtplib.SMTPException as e:
-        st.error(f"Failed to send OTP due to SMTP error: {e}")
-        return None
-    except Exception as e:
-        st.error(f"An error occurred: {e}")
-        return None
-
-# Login function with OTP verification
-def login():
-    """Handles the login process with OTP verification."""
-    st.header("Login")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-
-    if st.button("Request OTP"):
-        # Check if the username and password are correct
-        user = users_collection.find_one({"username": username})
-        if user and user["password"] == hash_password(password):
-            otp = send_otp(user["email"])  # Send OTP to the user's email
-            if otp:
-                st.session_state["otp"] = otp
-                st.session_state["username"] = username
-                st.session_state["authenticated"] = False
-                st.success("OTP sent to your registered email.")
-            else:
-                st.error("Failed to send OTP. Please try again.")
-        else:
-            st.error("Invalid username or password.")
-
-    # OTP input section
-    if "otp" in st.session_state:
-        entered_otp = st.text_input("Enter OTP", type="password")
-        if st.button("Verify OTP"):
-            if entered_otp == str(st.session_state["otp"]):
-                st.session_state["authenticated"] = True
-                st.success("Login successful!")
-            else:
-                st.error("Invalid OTP.")
+# Connect to MongoDB Atlas
+try:
+    client = MongoClient(CONNECTION_STRING)
+    db = client.get_database("empowerher")  # Replace with your database name
+    users_collection = db.get_collection("users")  # Replace with your collection name
+except Exception as e:
+    st.error(f"Failed to connect to MongoDB: {e}")
 
 # Register function with OTP verification
 def register():
@@ -81,15 +33,18 @@ def register():
             st.error("Username already exists.")
         else:
             hashed_password = hash_password(password)
-            # Store user data in MongoDB
-            users_collection.insert_one({"username": username, "password": hashed_password, "email": email})
-            otp = send_otp(email)  # Send OTP for email verification
-            if otp:
-                st.session_state["otp"] = otp
-                st.session_state["username"] = username
-                st.success("OTP sent to your email. Please verify to complete registration.")
-            else:
-                st.error("Failed to send OTP. Please try again.")
+            try:
+                # Store user data in MongoDB
+                users_collection.insert_one({"username": username, "password": hashed_password, "email": email})
+                otp = send_otp(email)  # Send OTP for email verification
+                if otp:
+                    st.session_state["otp"] = otp
+                    st.session_state["username"] = username
+                    st.success("OTP sent to your email. Please verify to complete registration.")
+                else:
+                    st.error("Failed to send OTP. Please try again.")
+            except Exception as e:
+                st.error(f"Failed to register user: {e}")
 
         # OTP input for registration
         entered_otp = st.text_input("Enter OTP", type="password")
@@ -161,8 +116,8 @@ def career_guidance():
 
     # Provide information on scholarships, internships, and programs
     st.subheader("Scholarships and Programs for Women in STEM")
-    st.write("- **[Google Women in Tech Scholarship](https://developers.google.com/womentechmakers)**: A great opportunity for women pursuing computer science and engineering.")
-    st.write("- **[Scholarships for Women in STEM](https://www.indiascienceandtechnology.gov.in/nurturing-minds/scholarships/women)**: Find various scholarships for women in science, technology, engineering, and mathematics fields.")
+    st.write("- [Google Women in Tech Scholarship](https://developers.google.com/womentechmakers): A great opportunity for women pursuing computer science and engineering.")
+    st.write("- [Scholarships for Women in STEM](https://www.indiascienceandtechnology.gov.in/nurturing-minds/scholarships/women): Find various scholarships for women in science, technology, engineering, and mathematics fields.")
 
     # Career quiz section
     st.subheader("Career Quiz")
@@ -195,9 +150,9 @@ def career_chatbot():
 
         # Recommend educational resources based on input
         st.subheader("Recommended Educational Resources")
-        st.write("- **[Coursera](https://www.coursera.org)**: Offers courses in a wide range of fields including technology, health, and more.")
-        st.write("- **[Udemy](https://www.udemy.com)**: Find practical courses to improve your skills.")
-        st.write("- **[edX](https://www.edx.org)**: Take professional certificate programs in technology, business, and health.")
+        st.write("- [Coursera](https://www.coursera.org): Offers courses in a wide range of fields including technology, health, and more.")
+        st.write("- [Udemy](https://www.udemy.com): Find practical courses to improve your skills.")
+        st.write("- [edX](https://www.edx.org): Take professional certificate programs in technology, business, and health.")
 
 # Achievements tracking
 def check_achievements():
@@ -294,7 +249,7 @@ def emotional_wellness_corner():
 
     if selected_activity == "Deep Breathing":
         st.write("""
-        **Deep Breathing Exercise:**
+        Deep Breathing Exercise:
         1. Sit comfortably and close your eyes.
         2. Inhale deeply through your nose for a count of four.
         3. Hold your breath for a count of four.
@@ -303,7 +258,7 @@ def emotional_wellness_corner():
         """)
     elif selected_activity == "Body Scan Meditation":
         st.write("""
-        **Body Scan Meditation:**
+        Body Scan Meditation:
         1. Lie down or sit in a comfortable position.
         2. Close your eyes and focus on your breath.
         3. Slowly bring your attention to each part of your body, starting from your toes and moving upward.
@@ -311,7 +266,7 @@ def emotional_wellness_corner():
         """)
     elif selected_activity == "Gratitude Practice":
         st.write("""
-        **Gratitude Practice:**
+        Gratitude Practice:
         1. Take a moment to think of three things you're grateful for today.
         2. Write them down or say them out loud.
         3. Reflect on how they bring positivity to your life.
@@ -341,8 +296,8 @@ def emotional_wellness_corner():
     if "journal_entries" in st.session_state and st.session_state["journal_entries"]:
         st.subheader("Your Journal Entries")
         for entry in st.session_state["journal_entries"]:
-            st.write(f"**Date:** {entry['date']}")
-            st.write(f"**Entry:** {entry['entry']}")
+            st.write(f"Date: {entry['date']}")
+            st.write(f"Entry: {entry['entry']}")
             st.write("---")
 
 # Career Preparation Toolkit
@@ -381,7 +336,7 @@ def career_preparation_toolkit():
         # Simulate AI response for feedback
         feedback = "Great start! Try to include your professional achievements, skills, and goals in a concise way."
         st.success("Your answer was submitted!")
-        st.write(f"**AI Feedback:** {feedback}")
+        st.write(f"AI Feedback: {feedback}")
 
     # Section 5: Industry-Specific Job Boards and Internships
     st.subheader("Job Boards and Internship Resources")
@@ -415,7 +370,7 @@ def fashion_styling_guide():
             st.subheader("Your Personalized Styling Recommendations")
 
             # Outfit Suggestions
-            st.write(f"**For a {occasion}:**")
+            st.write(f"For a {occasion}:")
             if gender == "Female":
                 st.write("- A tailored blazer paired with a pencil skirt or trousers for a professional yet stylish look.")
                 st.write(f"- Incorporate your favorite color, {color_preference}, through accessories like scarves or shoes.")
@@ -427,23 +382,23 @@ def fashion_styling_guide():
                 st.write(f"- Use your favorite color, {color_preference}, in subtle accents like lapel pins or bags.")
 
             # Grooming Tips
-            st.write("**Grooming Tips:**")
+            st.write("Grooming Tips:")
             st.write("- Ensure your hair is neat and styled appropriately for the occasion.")
             st.write("- Keep your nails clean and trimmed.")
             st.write("- Use minimal, natural makeup for a polished appearance.")
 
             # Makeup Advice
             if gender == "Female":
-                st.write("**Makeup Advice:**")
+                st.write("Makeup Advice:")
                 st.write("- Opt for a natural foundation with soft, neutral tones for eyeshadow.")
                 st.write("- Avoid overly bright or dramatic colors unless the occasion allows.")
                 st.write("- Use a subtle lip color that complements your outfit.")
 
     # Styling Articles and Resources
     st.subheader("Explore More Resources")
-    st.write("- [**Professional Outfit Ideas**](https://www.youtube.com/watch?v=41doIaUBn5I)")
-    st.write("- [**10 Grooming Tips for Professionals**](https://www.instyle.com/office-outfit-ideas-5395473)")
-    st.write("- [**Styling Guide for Academic Events**](https://www.nykaa.com/beauty-blog/grooming-tips-for-women/)")
+    st.write("- [Professional Outfit Ideas](https://www.youtube.com/watch?v=41doIaUBn5I)")
+    st.write("- [10 Grooming Tips for Professionals](https://www.instyle.com/office-outfit-ideas-5395473)")
+    st.write("- [Styling Guide for Academic Events](https://www.nykaa.com/beauty-blog/grooming-tips-for-women/)")
 
     # Save User Preferences
     st.subheader("Save Your Style Preferences")
@@ -509,7 +464,7 @@ def safe_space_reporting():
             st.success("Thank you for reporting. Your submission has been received and will be reviewed.")
 
     # Privacy Information
-    st.write("**Privacy Notice:**")
+    st.write("Privacy Notice:")
     st.write("- All reports are anonymous unless you choose to provide contact information.")
     st.write("- Your data will be handled confidentially and only used to assist you.")
 
@@ -535,9 +490,9 @@ def fitness_nutrition_guidance():
     st.write("Here are some simple home workout tutorials to stay fit:")
 
     st.markdown("""
-    - **[Full Body Home Workout (10 minutes)](https://www.youtube.com/watch?v=zUG2hqw9kLk)**: A quick workout to target your whole body.
-    - **[Core Strengthening Routine](https://www.youtube.com/watch?v=iTM98dTBHAA)**: Focuses on strengthening your core muscles.
-    - **[Leg Day at Home](https://www.youtube.com/watch?v=Jg61m0DwURs)**: A great workout for toning your legs and glutes.
+    - [Full Body Home Workout (10 minutes)](https://www.youtube.com/watch?v=zUG2hqw9kLk): A quick workout to target your whole body.
+    - [Core Strengthening Routine](https://www.youtube.com/watch?v=iTM98dTBHAA): Focuses on strengthening your core muscles.
+    - [Leg Day at Home](https://www.youtube.com/watch?v=Jg61m0DwURs): A great workout for toning your legs and glutes.
     """)
     
     # Meal Planning Tips Section
@@ -545,10 +500,10 @@ def fitness_nutrition_guidance():
     st.write("Here are some tips for planning balanced and nutritious meals:")
 
     st.markdown("""
-    - **Include protein-rich foods**: such as eggs, beans, and lean meats to fuel your body.
-    - **Add vegetables**: Make sure to include a variety of veggies like spinach, broccoli, and carrots for vitamins and minerals.
-    - **Stay hydrated**: Drink plenty of water, and consider infusing it with fruits for added flavor.
-    - **Plan your meals**: Try to plan and prep your meals ahead of time to avoid unhealthy eating habits.
+    - Include protein-rich foods: such as eggs, beans, and lean meats to fuel your body.
+    - Add vegetables: Make sure to include a variety of veggies like spinach, broccoli, and carrots for vitamins and minerals.
+    - Stay hydrated: Drink plenty of water, and consider infusing it with fruits for added flavor.
+    - Plan your meals: Try to plan and prep your meals ahead of time to avoid unhealthy eating habits.
     """)
 
     # Snack Ideas Section
@@ -556,10 +511,10 @@ def fitness_nutrition_guidance():
     st.write("Here are some quick and easy snack ideas for busy study or workdays:")
 
     st.markdown("""
-    - **Greek Yogurt with Nuts**: High in protein and healthy fats.
-    - **Apple with Peanut Butter**: A balanced snack with fiber, healthy fats, and protein.
-    - **Trail Mix**: A mix of nuts, seeds, and dried fruits for a quick energy boost.
-    - **Veggie Sticks with Hummus**: Carrot and cucumber sticks with a side of hummus for a healthy, crunchy snack.
+    - Greek Yogurt with Nuts: High in protein and healthy fats.
+    - Apple with Peanut Butter: A balanced snack with fiber, healthy fats, and protein.
+    - Trail Mix: A mix of nuts, seeds, and dried fruits for a quick energy boost.
+    - Veggie Sticks with Hummus: Carrot and cucumber sticks with a side of hummus for a healthy, crunchy snack.
     """)
 
 # Main Function
@@ -602,5 +557,5 @@ def main():
              fitness_nutrition_guidance()
         
 # Run the Streamlit app
-if __name__ == "__main__":
+if name == "main":
     main()
