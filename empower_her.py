@@ -10,9 +10,13 @@ EMAIL_ADDRESS = "empowerher12345@gmail.com"
 EMAIL_PASSWORD = "nwft qatt xqdx kpgi"
 
 # MongoDB Setup
-client = MongoClient("mongodb+srv://manisha:<manisha@123>@empowerher.fpkmk.mongodb.net/?retryWrites=true&w=majority&appName=empowerher")
-db = client["empower_her"]  # Updated database name
-users_collection = db["users"]  # Updated collection name
+
+CONNECTION_STRING = "mongodb+srv://manisha:<manisha@123>@empowerher.fpkmk.mongodb.net/?retryWrites=true&w=majority&appName=empowerher"
+
+# Connect to MongoDB Atlas
+client = MongoClient(CONNECTION_STRING)
+db = client.get_database("empowerher")  # Replace with your database name
+users_collection = db.get_collection("users")  # Replace with your collection name
 
 # Helper Functions
 def hash_password(password):
