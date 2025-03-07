@@ -10,7 +10,7 @@ EMAIL_ADDRESS = "empowerher12345@gmail.com"
 EMAIL_PASSWORD = "nwft qatt xqdx kpgi"
 
 # MongoDB Setup
-client = MongoClient("mongodb://localhost:27017/")
+client = MongoClient("mongodb+srv://manisha:<manisha@123>@empowerher.fpkmk.mongodb.net/?retryWrites=true&w=majority&appName=empowerher")
 db = client["empower_her"]  # Updated database name
 users_collection = db["users"]  # Updated collection name
 
