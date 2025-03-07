@@ -74,6 +74,21 @@ def register():
             else:
                 st.error("Invalid OTP.")
 
+# Login function
+def login():
+    """Handles the login process."""
+    st.header("Login")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+
+    if st.button("Login"):
+        user = users_collection.find_one({"username": username})
+        if user and user["password"] == hash_password(password):
+            st.session_state["authenticated"] = True
+            st.success("Login successful!")
+        else:
+            st.error("Invalid username or password.")
+
 # Stress Analyzer function to analyze and provide feedback
 def stress_analyzer():
     """Analyzes the user's stress level and provides feedback and coping strategies."""
