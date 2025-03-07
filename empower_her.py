@@ -20,6 +20,26 @@ try:
 except Exception as e:
     st.error(f"Failed to connect to MongoDB: {e}")
 
+# Hash password function
+def hash_password(password):
+    """Hashes a password using SHA-256."""
+    return hashlib.sha256(password.encode()).hexdigest()
+
+# Function to send OTP
+def send_otp(email):
+    """Sends an OTP to the given email address."""
+    otp = random.randint(100000, 999999)
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+            message = f"Subject: Your OTP\n\nYour OTP is {otp}"
+            server.sendmail(EMAIL_ADDRESS, email, message)
+        return otp
+    except Exception as e:
+        st.error(f"Failed to send OTP: {e}")
+        return None
+
 # Register function with OTP verification
 def register():
     """Handles the registration process with OTP verification."""
@@ -557,5 +577,5 @@ def main():
              fitness_nutrition_guidance()
         
 # Run the Streamlit app
-if name == "main":
+if __name__ == "__main__":
     main()
